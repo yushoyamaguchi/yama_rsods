@@ -10,18 +10,18 @@ struct Entry<K, V> {
 }
 
 struct ChainedHashMap<K, V> {
-    buckets: Vec<LinkedList<Entry<K, V>>>,
+    buckets: Vec<Vec<Entry<K, V>>>,
 }
 
 impl<K,V> ChainedHashMap<K,V>
 where
     K: Hash + Eq + Clone,
-    V: Clone,
+    V: Clone + PartialEq,
 {
     fn new() -> ChainedHashMap<K,V>{
         let mut buckets = Vec::with_capacity(INITIAL_SIZE);
         for _ in 0..INITIAL_SIZE {
-            buckets.push(LinkedList::new());
+            buckets.push(Vec::new());
         }
         ChainedHashMap { buckets }
     }
@@ -33,7 +33,7 @@ where
 
     fn insert(&mut self, key: K, value: V) -> Option<V> {
         let hash = self.hash(&key);
-        let bucket: &mut LinkedList<Entry<K,V>> = &mut self.buckets[hash];
+        let bucket: &mut Vec<Entry<K,V>> = &mut self.buckets[hash];
         for entry in bucket {
             if entry.key == key {
                 let old_value = entry.value.clone();
@@ -46,7 +46,7 @@ where
 
     fn get(&self, key: &K) -> Option<V> {
         let hash = self.hash(key);
-        let bucket: &LinkedList<Entry<K,V>> = &self.buckets[hash];
+        let bucket: &Vec<Entry<K,V>> = &self.buckets[hash];
         for entry in bucket {
             if entry.key == *key {
                 return Some(entry.value.clone());
@@ -57,11 +57,13 @@ where
 
     fn remove(&mut self, key: &K, value: &V) -> Option<V> {
         let hash = self.hash(key);
-        let bucket: &mut LinkedList<Entry<K,V>> = &mut self.buckets[hash];
+        let bucket: &mut Vec<Entry<K,V>> = &mut self.buckets[hash];
         let mut index = 0;
         for entry in bucket {
             if entry.key == *key && entry.value == *value {
-                return Some(bucket.remove(index).value);
+                let removed_value = entry.value.clone();
+                //bucket.remove(index); //To implement
+                return Some(removed_value);
             }
             index += 1;
         }

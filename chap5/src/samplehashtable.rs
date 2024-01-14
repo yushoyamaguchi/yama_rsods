@@ -58,14 +58,9 @@ where
     fn remove(&mut self, key: &K, value: &V) -> Option<V> {
         let hash = self.hash(key);
         let bucket: &mut Vec<Entry<K,V>> = &mut self.buckets[hash];
-        let mut index = 0;
-        for entry in bucket {
-            if entry.key == *key && entry.value == *value {
-                let removed_value = entry.value.clone();
-                //bucket.remove(index); //To implement
-                return Some(removed_value);
-            }
-            index += 1;
+        if let Some(index) = bucket.iter().position(|entry| entry.key == *key && entry.value == *value) { //iterator : referrence memo.md
+            let removed_value = bucket.remove(index).value;
+            return Some(removed_value);
         }
         None
     }
